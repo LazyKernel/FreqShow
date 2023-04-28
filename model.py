@@ -45,6 +45,9 @@ class FreqShowModel(object):
 		self.ser = serial.Serial('/dev/ttyACM0')
 		self.ser.flush()
 
+		self.bytes_read: bytes = []
+		self.last_data = [0] * 128
+
 		# Initialize RTL-SDR library.
 		#self.sdr = RtlSdr()
 		self.set_center_freq((2527 - 2400) / 2)
@@ -161,13 +164,22 @@ class FreqShowModel(object):
 		values which are the intensities of each frequency bucket (i.e. FFT of
 		radio samples).
 		"""
-		ser_bytes = self.ser.readline()
-		try:
-			decoded_bytes = ser_bytes.decode('utf-8')
-		except:
-			return [0] * 128
+		if self.ser.in_waiting > 0:
+			ser_bytes = self.ser.read(self.ser.in_waiting)
+			combined_bytes = self.bytes_read + ser_bytes
+			try:
+				decoded_bytes = ser_bytes.decode('utf-8')
+			except:
+				self.bytes_read = combined_bytes
+				return self.last_data
 		
-		return [int(v) for v in decoded_bytes.split()]
+		value_chunks = decoded_bytes.split('\n')
+		values = value_chunks[0].split()
+		if len(values) >= 128:
+			self.bytes_read = []
+			return [int(v) for v in values]
+		
+		return self.last_data
 
 		# # Get width number of raw samples so the number of frequency bins is
 		# # the same as the display width.  Add two because there will be mean/DC
