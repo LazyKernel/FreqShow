@@ -468,7 +468,7 @@ class InstantSpectrogram(SpectrogramBase):
 		# Draw line segments to join each FFT result bin.
 		ylast = freqs[0]
 		for i in range(1, width):
-			idx = ((127 * (i - 1)) / (width - 1)) + 1
+			idx = int((127 * (i - 1)) / (width - 1)) + 1
 			y = freqs[idx]
 			pygame.draw.line(screen, freqshow.INSTANT_LINE, (i-1, ylast), (i, y))
 			ylast = y
