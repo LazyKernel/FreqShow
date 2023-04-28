@@ -172,7 +172,9 @@ class FreqShowModel(object):
 			except:
 				self.bytes_read = combined_bytes
 				return self.last_data
-		
+		else:
+			return self.last_data
+
 		value_chunks = decoded_bytes.split('\n')
 		values = value_chunks[0].split()
 		if len(values) >= 128:
