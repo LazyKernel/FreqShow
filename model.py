@@ -45,7 +45,7 @@ class FreqShowModel(object):
 		self.ser = serial.Serial('/dev/ttyACM0')
 		self.ser.flush()
 
-		self.bytes_read: bytes = []
+		self.bytes_read: bytes = bytes([])
 		self.last_data = [0] * 128
 
 		# Initialize RTL-SDR library.
@@ -176,7 +176,7 @@ class FreqShowModel(object):
 		value_chunks = decoded_bytes.split('\n')
 		values = value_chunks[0].split()
 		if len(values) >= 128:
-			self.bytes_read = []
+			self.bytes_read = bytes([])
 			return [int(v) for v in values]
 		
 		return self.last_data
