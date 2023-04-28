@@ -179,7 +179,18 @@ class FreqShowModel(object):
 		values = value_chunks[0].split()
 		if len(values) >= 128:
 			self.bytes_read = bytes([])
-			return [int(v) for v in values]
+			freqs = [int(v) for v in values]
+
+			if self.min_auto_scale:
+				min_intensity = np.min(freqs)
+				self.min_intensity = min_intensity if self.min_intensity is None \
+					else min(min_intensity, self.min_intensity)
+			if self.max_auto_scale:
+				max_intensity = np.max(freqs)
+				self.max_intensity = max_intensity if self.max_intensity is None \
+					else max(max_intensity, self.max_intensity)
+				
+			return freqs
 		
 		return self.last_data
 
