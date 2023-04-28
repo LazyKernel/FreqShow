@@ -56,10 +56,10 @@ class FreqShowModel(object):
 
 	def _clear_intensity(self):
 		if self.min_auto_scale:
-			self.min_intensity = None
+			self.min_intensity = 0
 		if self.max_auto_scale:
-			self.max_intensity = None
-		self.range = None
+			self.max_intensity = 48
+		self.range = 48
 
 	def get_center_freq(self):
 		"""Return center frequency of tuner in megahertz."""
@@ -180,16 +180,6 @@ class FreqShowModel(object):
 		if len(values) >= 128:
 			self.bytes_read = bytes([])
 			freqs = [int(v) for v in values]
-
-			if self.min_auto_scale:
-				min_intensity = np.min(freqs)
-				self.min_intensity = min_intensity if self.min_intensity is None \
-					else min(min_intensity, self.min_intensity)
-			if self.max_auto_scale:
-				max_intensity = np.max(freqs)
-				self.max_intensity = max_intensity if self.max_intensity is None \
-					else max(max_intensity, self.max_intensity)
-				
 			return freqs
 		
 		return self.last_data
