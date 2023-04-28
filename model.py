@@ -46,7 +46,7 @@ class FreqShowModel(object):
 		self.ser.flush()
 
 		self.bytes_read: bytes = bytes([])
-		self.last_data = [0] * 128
+		self.last_data = np.array([0] * 128)
 
 		# Initialize RTL-SDR library.
 		#self.sdr = RtlSdr()
@@ -179,7 +179,8 @@ class FreqShowModel(object):
 		values = value_chunks[0].split()
 		if len(values) >= 128:
 			self.bytes_read = bytes([])
-			freqs = [int(v) for v in values]
+			freqs = np.array([int(v) for v in values])
+			self.last_data = freqs
 			return freqs
 		
 		return self.last_data
