@@ -42,7 +42,7 @@ class FreqShowModel(object):
 		self.set_min_intensity('AUTO')
 		self.set_max_intensity('AUTO')
 		# init serial connection
-		self.ser = serial.Serial('/dev/ttyACM0')
+		self.ser = serial.Serial(port='COM3', baudrate=115200, timeout=.1)
 		self.ser.flush()
 
 		self.bytes_read: bytes = bytes([])
@@ -50,7 +50,7 @@ class FreqShowModel(object):
 
 		# Initialize RTL-SDR library.
 		#self.sdr = RtlSdr()
-		self.set_center_freq((2527 - 2400) / 2)
+		self.set_center_freq((2527 - 2400) / 2 + 2400)
 		self.set_sample_rate(2.4)
 		self.set_gain('AUTO')
 
@@ -63,7 +63,7 @@ class FreqShowModel(object):
 
 	def get_center_freq(self):
 		"""Return center frequency of tuner in megahertz."""
-		return (2527 - 2400) / 2
+		return ((2527 - 2400) / 2) + 2400
 		#return self.sdr.get_center_freq()/1000000.0
 
 	def set_center_freq(self, freq_mhz):
@@ -78,7 +78,7 @@ class FreqShowModel(object):
 
 	def get_sample_rate(self):
 		"""Return sample rate of tuner in megahertz."""
-		return 10
+		return 2.4
 		#return self.sdr.get_sample_rate()/1000000.0
 
 	def set_sample_rate(self, sample_rate_mhz):
@@ -164,26 +164,38 @@ class FreqShowModel(object):
 		values which are the intensities of each frequency bucket (i.e. FFT of
 		radio samples).
 		"""
-		if self.ser.in_waiting > 0:
-			ser_bytes = self.ser.read(self.ser.in_waiting)
-			combined_bytes = self.bytes_read + ser_bytes
-			try:
-				decoded_bytes = ser_bytes.decode('utf-8')
-			except:
-				self.bytes_read = combined_bytes
-				return self.last_data
-		else:
+		ser_bytes = self.ser.readline()
+		try:
+			decoded_bytes = ser_bytes.decode('utf-8')
+		except:
 			return self.last_data
 
-		value_chunks = decoded_bytes.split('\n')
-		values = value_chunks[0].split()
-		if len(values) >= 128:
-			self.bytes_read = bytes([])
-			freqs = np.array([int(v) for v in values])
-			self.last_data = freqs
-			return freqs
+		values = decoded_bytes.split()
+		freqs = np.array([int(v) for v in values])
+		if len(freqs) < 128:
+			return self.last_data
+		return freqs
+
+		# if self.ser.in_waiting > 0:
+		# 	ser_bytes = self.ser.read(self.ser.in_waiting)
+		# 	combined_bytes = self.bytes_read + ser_bytes
+		# 	try:
+		# 		decoded_bytes = ser_bytes.decode('utf-8')
+		# 	except:
+		# 		self.bytes_read = combined_bytes
+		# 		return self.last_data
+		# else:
+		# 	return self.last_data
+
+		# value_chunks = decoded_bytes.split('\n')
+		# values = value_chunks[0].split()
+		# if len(values) >= 128:
+		# 	self.bytes_read = bytes([])
+		# 	freqs = np.array([int(v) for v in values])
+		# 	self.last_data = freqs
+		# 	return freqs
 		
-		return self.last_data
+		# return self.last_data
 
 		# # Get width number of raw samples so the number of frequency bins is
 		# # the same as the display width.  Add two because there will be mean/DC

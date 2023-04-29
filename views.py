@@ -404,6 +404,7 @@ class SpectrogramBase(ViewBase):
 
 	def click(self, location):
 		mx, my = location
+		print(location)
 		if my > self.buttons.row_size and my < 4*self.buttons.row_size:
 			# Handle click on spectrogram.
 			self.overlay_enabled = not self.overlay_enabled
@@ -444,7 +445,8 @@ class WaterfallSpectrogram(SpectrogramBase):
 		# Draw FFT values mapped through the gradient function to a color.
 		self.waterfall.lock()
 		for i in range(width):
-			power = clamp(freqs[i], 0.0, 1.0)
+			idx = int((127 * (i - 1)) / (width - 1)) + 1
+			power = clamp(freqs[idx], 0.0, 1.0)
 			self.waterfall.set_at((i, wheight-1), self.color_func(power))
 		self.waterfall.unlock()
 		screen.blit(self.waterfall, (0, 0), area=(0, offset, width, height))
