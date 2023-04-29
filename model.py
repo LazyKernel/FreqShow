@@ -45,6 +45,10 @@ class FreqShowModel(object):
 		self.ser = serial.Serial(port='COM3', baudrate=115200, timeout=.1)
 		self.ser.flush()
 
+		self.ofile = open('data.txt', 'a')
+		self.ofile.write('-----------------\n')
+		self.ofile.flush()
+
 		self.bytes_read: bytes = bytes([])
 		self.last_data = np.array([0] * 128)
 
@@ -171,9 +175,20 @@ class FreqShowModel(object):
 			return self.last_data
 
 		values = decoded_bytes.split()
-		freqs = np.array([int(v) for v in values])
+		try:
+			freqs = np.array([int(v, base=16) for v in values])
+		except:
+			return self.last_data
 		if len(freqs) < 128:
 			return self.last_data
+		self.last_data = freqs
+
+		try:
+			self.ofile.write(' '.join(values) + '\n')
+			self.ofile.flush()
+		except:
+			pass
+
 		return freqs
 
 		# if self.ser.in_waiting > 0:
